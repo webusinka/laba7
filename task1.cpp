@@ -1,58 +1,59 @@
+//Имеются N двузначных чисел. Можно ли их соединить знаками сложения и умножения, чтобы получить заданное число S?
+
 #include <iostream>
 #include <vector>
+#include <string>
 #include <cmath>
 
 using namespace std;
 
-bool findExpression(vector<int>& numbers, int target, int currentSum, string currentExpression) {
-    // Базовый случай: если текущая сумма равна целевому значению, возвращаем true
-    if (currentSum == target) {
-        cout << currentExpression << " = " << target << endl;
-        return true;
+bool checkExpression(vector<int>& numbers, vector<char>& operations, int targetResult, int currentIndex, int currentResult) {
+    if (currentIndex == numbers.size() - 1) {
+        return currentResult == targetResult;
     }
 
-    // Если текущая сумма больше целевого значения, возвращаем false
-    if (currentSum > target) {
-        return false;
-    }
-
-    // Рекурсивный случай: перебираем все оставшиеся числа
-    for (int i = 0; i < numbers.size(); i++) {
-        // Если текущий символ первый, используем его без операции
-        if (currentExpression.empty()) {
-            if (findExpression(numbers, target, currentSum + numbers[i], to_string(numbers[i]))) {
-                return true;
-            }
-        }
-        // Иначе используем операции сложения и умножения
-        if (findExpression(numbers, target, currentSum + numbers[i], currentExpression + "+" + to_string(numbers[i]))) {
+    for (int i = currentIndex + 1; i < numbers.size(); i++) {
+        operations.emplace_back('+');
+        if (checkExpression(numbers, operations, targetResult, i, currentResult + numbers[i])) {
             return true;
         }
-        if (findExpression(numbers, target, currentSum * numbers[i], currentExpression + "*" + to_string(numbers[i]))) {
+        operations.pop_back();
+
+        operations.emplace_back('*');
+        if (checkExpression(numbers, operations, targetResult, i, currentResult * numbers[i])) {
             return true;
         }
+        operations.pop_back();
     }
 
-    // Если ни один вариант не подошел, возвращаем false
     return false;
 }
 
 int main() {
-    system("chcp 65001");
-    int n, s;
-    cout << "Введите количество чисел: ";
-    cin >> n;
-    cout << "Введите целевое число: ";
-    cin >> s;
 
-    vector<int> numbers(n);
-    cout << "Введите числа: ";
-    for (int i = 0; i < n; i++) {
+    int N;
+    cout << "Input count of number (N): ";
+    cin >> N;
+
+    vector<int> numbers(N);
+    cout << "Input " << N << " numbers: ";
+    for (int i = 0; i < N; i++) {
         cin >> numbers[i];
     }
 
-    if (!findExpression(numbers, s, 0, "")) {
-        cout << "Не удалось найти подходящее выражение" << endl;
+    int targetResult;
+    cout << "Input total number (S): ";
+    cin >> targetResult;
+    vector<char> operations;
+
+    if (checkExpression(numbers, operations, targetResult, 0, numbers[0])) {
+        cout << "Expression: ";
+        for (int i = 0; i < numbers.size() - 1; i++) {
+            cout << numbers[i] << " " << operations[i] << " ";
+        }
+        cout << numbers.back() << " = " << targetResult << endl;
+    } else {
+        cout << "An expression that is equal to was not found " << targetResult << endl;
     }
 
     return 0;
