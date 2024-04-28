@@ -4,10 +4,11 @@
 using namespace std;
 
 int factorial(int n) {
-    if (n == 0) {
-        return 1;
+    int result = 1;
+    for (int i = 1; i <= n; i++) {
+        result *= i;
     }
-    return n * factorial(n - 1);
+    return result;
 }
 
 void generatePermutations(vector<int>& numbers, vector<int>& permutation, vector<bool>& used, int depth, int k, int& count) {
