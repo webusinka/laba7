@@ -1,60 +1,65 @@
-//Имеются N двузначных чисел. Можно ли их соединить знаками сложения и умножения, чтобы получить заданное число S?
-
 #include <iostream>
 #include <vector>
-#include <string>
 #include <cmath>
 
 using namespace std;
 
-bool checkExpression(vector<int>& numbers, vector<char>& operations, int targetResult, int currentIndex, int currentResult) {
-    if (currentIndex == numbers.size() - 1) {
-        return currentResult == targetResult;
+bool findExpression(vector<int> numbers, int target, int currentSum, string currentExpression, vector<bool>& used) {
+    // Базовый случай: если текущая сумма равна целевому значению, значит решение найдено
+    if (currentSum == target) {
+        cout << currentExpression << " = " << target << endl;
+        return true;
     }
 
-    for (int i = currentIndex + 1; i < numbers.size(); i++) {
-        operations.emplace_back('+');
-        if (checkExpression(numbers, operations, targetResult, i, currentResult + numbers[i])) {
-            return true;
-        }
-        operations.pop_back();
+    //перебираем все возможные действия
+    for (int i = 0; i < numbers.size(); i++) {
+        //число уже использовано, пропускаем его
+        if (used[i]) continue;
 
-        operations.emplace_back('*');
-        if (checkExpression(numbers, operations, targetResult, i, currentResult * numbers[i])) {
+        //cложение
+        used[i] = true;
+        if (findExpression(numbers, target, currentSum + numbers[i], currentExpression + "+" + to_string(numbers[i]), used))
             return true;
-        }
-        operations.pop_back();
+        used[i] = false;
+
+        //умножение
+        used[i] = true;
+        if (findExpression(numbers, target, currentSum * numbers[i], currentExpression + "*" + to_string(numbers[i]), used))
+            return true;
+        used[i] = false;
     }
 
     return false;
 }
 
 int main() {
+    int count, target;
+    cout << "Input count two-digit numbers: ";
+    cin >> count;
+    cout << "Input total score of sum of prod: ";
+    cin >> target;
 
-    int N;
-    cout << "Input count of number (N): ";
-    cin >> N;
-
-    vector<int> numbers(N);
-    cout << "Input " << N << " numbers: ";
-    for (int i = 0; i < N; i++) {
-        cin >> numbers[i];
-    }
-
-    int targetResult;
-    cout << "Input total number (S): ";
-    cin >> targetResult;
-    vector<char> operations;
-
-    if (checkExpression(numbers, operations, targetResult, 0, numbers[0])) {
-        cout << "Expression: ";
-        for (int i = 0; i < numbers.size() - 1; i++) {
-            cout << numbers[i] << " " << operations[i] << " ";
+    vector<int> numbers(count);
+    vector<bool> used(count, false);
+    cout << "Input " << count << " two-digit numbers: ";
+    
+    for (auto& number : numbers) {
+        cin >> number;
+        while (number < 10 || number > 99) {
+            cout << "Number is not a two-digit number. Please input again: ";
+            cin >> number;
         }
-        cout << numbers.back() << " = " << targetResult << endl;
-    } else {
-        cout << "An expression that is equal to was not found " << targetResult << endl;
     }
+
+    // Пробуем каждое число в качестве начального числа в выражении
+    for (int i = 0; i < numbers.size(); i++) {
+        used[i] = true;
+        if (findExpression(numbers, target, numbers[i], to_string(numbers[i]), used))
+            return 0;
+        used[i] = false;
+    }
+
+    cout << "It is impossible to get a score through add or multiplication." << endl;
 
     return 0;
 }
